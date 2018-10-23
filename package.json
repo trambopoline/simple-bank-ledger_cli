@@ -1,0 +1,28 @@
+{
+	"name": "simple-bank-ledger_front",
+	"version": "0.0.1",
+	"description": "The front end of a simple bank ledger",
+	"main": "index.js",
+	"scripts": {
+    "setVars": "VERSION=$npm_package_version DESCRIPTION=$npm_package_description",
+		"dev-start": "$npm_package_setVars babel-node src/index.js",
+		"babel": "babel src/index.js --out-dir dist",
+		"start": "$npm_package_setVars node dist/index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"simple",
+		"bank",
+		"cli"
+	],
+	"author": "Devin Dodson",
+	"license": "MIT",
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-preset-env": "^1.7.0",
+		"nodemon": "^1.18.4"
+	},
+	"dependencies": {
+		"commander": "^2.19.0"
+	}
+}
