@@ -2,7 +2,7 @@
 	"name": "simple-bank-ledger_front",
 	"version": "0.0.1",
 	"description": "The front end of a simple bank ledger.",
-  "main": "index.js",
+	"main": "index.js",
 	"scripts": {
 		"build": "babel src --out-dir dist",
 		"start": "VERSION=$npm_package_version DESCRIPTION=$npm_package_description node dist/index.js",
@@ -10,8 +10,10 @@
 	},
 	"watch": {
 		"build": {
-      "patterns": ["src"]
-    }
+			"patterns": [
+				"src"
+			]
+		}
 	},
 	"keywords": [
 		"simple",
@@ -26,6 +28,10 @@
 		"npm-watch": "^0.4.0"
 	},
 	"dependencies": {
-		"commander": "^2.19.0"
+		"chalk": "^2.4.1",
+		"commander": "^2.19.0",
+		"lodash": "^4.17.11",
+		"node-cache": "^4.2.0",
+		"restify-clients": "^2.6.2"
 	}
 }
