@@ -27,7 +27,7 @@ export function register(username, password, email) {
 		email
 	};
 
-	client.post("/users", reqBody, function(err, req, res, obj) {
+	client.post("/users", reqBody, function (err, req, res, obj) {
 		let message;
 		if (err) {
 			message = _.get(
@@ -53,15 +53,25 @@ export function register(username, password, email) {
 
 export function transactions(numTransactions) {
 	numTransactions
-		? console.log(`Getting last ${numTransactions} transactions...`)
-		: console.log(`Getting all transactions...`);
+		?
+		console.log(`Getting last ${numTransactions} transactions...`) :
+		console.log(`Getting all transactions...`);
 
-	client.basicAuth(
-		userCredentialsCache.getKey("username"),
-		userCredentialsCache.getKey("password")
-	);
+	const username = userCredentialsCache.getKey("username");
+	const password = userCredentialsCache.getKey("password");
 
-	client.get("/transactions", function(err, req, res, obj) {
+	if (username && password) { // TODO put this into a function. DRY
+		client.basicAuth(
+			userCredentialsCache.getKey("username"),
+			userCredentialsCache.getKey("password")
+		);
+	}
+	else{
+		console.log(chalk.red("You must be logged in to complete this action"));
+		return
+	}
+
+	client.get("/transactions", function (err, req, res, obj) {
 		let message = ``;
 		if (err) {
 			if (res && res.statusCode == 401) {
@@ -80,6 +90,7 @@ export function transactions(numTransactions) {
 		if (obj.data.length == 0) {
 			message = "No transactions to display";
 		} else {
+			//TODO display this in a table, or otherwise well formatted
 			obj.data.forEach(element => {
 				message += `Transaction value: ${
 					element.amount
@@ -108,7 +119,7 @@ export function login(username, password) {
 
 	client.basicAuth(username, password);
 
-	client.post("/login", function(err, req, res, obj) {
+	client.post("/login", function (err, req, res, obj) {
 		let message;
 		if (err) {
 			if (res && res.statusCode == 401) {
@@ -140,7 +151,7 @@ export function logout() {
 }
 
 export function withdraw(amount) {
-	console.log(`Withdrawing ${amount} from your account...`);
+	console.log(`Withdrawing $${amount} from your account...`);
 
 	// make amount negative
 	amount = `-${amount}`;
@@ -150,7 +161,9 @@ export function withdraw(amount) {
 		userCredentialsCache.getKey("password")
 	);
 
-	client.post("/transactions/withdrawals", { amount }, function(
+	client.post("/transactions/withdrawals", {
+		amount
+	}, function (
 		err,
 		req,
 		res,
@@ -176,6 +189,40 @@ export function withdraw(amount) {
 		// console.log(chalk.cyan(message));
 	});
 }
+
 export function deposit(amount) {
-	// console.log(userCredentialsCache.all());
+	console.log(`Depositing ${amount} into your account...`);
+
+	client.basicAuth(
+		userCredentialsCache.getKey("username"),
+		userCredentialsCache.getKey("password")
+	);
+
+	client.post("/transactions/deposits", {
+		amount
+	}, function (
+		err,
+		req,
+		res,
+		obj
+	) {
+		let message;
+		if (err) {
+			if (res && res.statusCode == 401) {
+				message = `Authorization error. Please try logging in again.`;
+			} else {
+				message = _.get(
+					err,
+					"message",
+					`${strings.error}: Could not complete deposit`
+				);
+			}
+			console.log(`\n${chalk.red(message)}`);
+			return;
+		}
+
+		console.log(JSON.stringify(obj, null, 2));
+
+		// console.log(chalk.cyan(message));
+	});
 }
