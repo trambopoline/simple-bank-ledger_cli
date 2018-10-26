@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+
+require("dotenv").config();
 import program from "commander";
 import {
 	register,
@@ -22,7 +25,7 @@ program.on("command:*", function() {
 
 program
 	.command("register <username> <password> [email]")
-	.alias("rg")
+	.alias("reg")
 	.description("Register a new username and password")
 	.action(register);
 
