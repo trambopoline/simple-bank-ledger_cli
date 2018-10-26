@@ -1,11 +1,28 @@
 import program from "commander";
-import { register, login, who, logout, deposit, withdraw, transactions } from "./controllers/commands";
+import {
+	register,
+	login,
+	who,
+	logout,
+	deposit,
+	withdraw,
+	transactions,
+	getBalance
+} from "./controllers/commands";
 
 program.version(process.env.VERSION).description(process.env.DESCRIPTION);
 
+// error on unknown commands
+program.on("command:*", function() {
+	console.error(
+		`Invalid command: ${program.args.join(" ")}\nSee --help for a list of available commands.`
+	);
+	process.exit(1);
+});
+
 program
 	.command("register <username> <password> [email]")
-	.alias("r")
+	.alias("rg")
 	.description("Register a new username and password")
 	.action(register);
 
@@ -29,7 +46,7 @@ program
 
 program
 	.command("deposit <amount>")
-	.alias("dp")
+	.alias("dep")
 	.description("Deposit money into your account")
 	.action(deposit);
 
@@ -40,10 +57,16 @@ program
 	.action(withdraw);
 
 program
-	.command("transactions [number-of-transactions]")
-	.alias("t")
-	.description("See a list of your transactions")
+	.command("history [number-of-transactions]")
+	.alias("his")
+	.description("See your transaction history")
 	.action(transactions);
+
+program
+	.command("balance")
+	.alias("bal")
+	.description("Check your account balance")
+	.action(getBalance);
 
 // Display help if no arguments supplied
 if (!process.argv.slice(2).length) {

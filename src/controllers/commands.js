@@ -17,6 +17,20 @@ const strings = {
 	unknownError: chalk.red("Sorry, something went wrong...")
 };
 
+function checkUserLoggedIn(
+	message = "You must be logged in to complete this action"
+) {
+	const username = userCredentialsCache.getKey("username");
+	const password = userCredentialsCache.getKey("password");
+
+	if (username && password) {
+		client.basicAuth(username, password);
+	} else {
+		console.log(chalk.red(message));
+		return false;
+	}
+}
+
 export function register(username, password, email) {
 	console.log(`Registering as ${username}...\n`);
 
@@ -27,7 +41,7 @@ export function register(username, password, email) {
 		email
 	};
 
-	client.post("/users", reqBody, function (err, req, res, obj) {
+	client.post("/users", reqBody, function(err, req, res, obj) {
 		let message;
 		if (err) {
 			message = _.get(
@@ -53,25 +67,12 @@ export function register(username, password, email) {
 
 export function transactions(numTransactions) {
 	numTransactions
-		?
-		console.log(`Getting last ${numTransactions} transactions...`) :
-		console.log(`Getting all transactions...`);
+		? console.log(`Getting last ${numTransactions} transactions...`)
+		: console.log(`Getting all transactions...`);
 
-	const username = userCredentialsCache.getKey("username");
-	const password = userCredentialsCache.getKey("password");
+	checkUserLoggedIn();
 
-	if (username && password) { // TODO put this into a function. DRY
-		client.basicAuth(
-			userCredentialsCache.getKey("username"),
-			userCredentialsCache.getKey("password")
-		);
-	}
-	else{
-		console.log(chalk.red("You must be logged in to complete this action"));
-		return
-	}
-
-	client.get("/transactions", function (err, req, res, obj) {
+	client.get("/transactions", function(err, req, res, obj) {
 		let message = ``;
 		if (err) {
 			if (res && res.statusCode == 401) {
@@ -119,7 +120,7 @@ export function login(username, password) {
 
 	client.basicAuth(username, password);
 
-	client.post("/login", function (err, req, res, obj) {
+	client.post("/login", function(err, req, res, obj) {
 		let message;
 		if (err) {
 			if (res && res.statusCode == 401) {
@@ -156,57 +157,73 @@ export function withdraw(amount) {
 	// make amount negative
 	amount = `-${amount}`;
 
-	client.basicAuth(
-		userCredentialsCache.getKey("username"),
-		userCredentialsCache.getKey("password")
-	);
+	checkUserLoggedIn();
 
-	client.post("/transactions/withdrawals", {
-		amount
-	}, function (
-		err,
-		req,
-		res,
-		obj
-	) {
-		let message;
-		if (err) {
-			if (res && res.statusCode == 401) {
-				message = `Authorization error. Please try logging in again.`;
-			} else {
-				message = _.get(
-					err,
-					"message",
-					`${strings.error}: Could not complete withdrawal`
-				);
+	client.post(
+		"/transactions/withdrawals",
+		{
+			amount
+		},
+		function(err, req, res, obj) {
+			let message;
+			if (err) {
+				if (res && res.statusCode == 401) {
+					message = `Authorization error. Please try logging in again.`;
+				} else {
+					message = _.get(
+						err,
+						"message",
+						`${strings.error}: Could not complete withdrawal`
+					);
+				}
+				console.log(`\n${chalk.red(message)}`);
+				return;
 			}
-			console.log(`\n${chalk.red(message)}`);
-			return;
+
+			console.log(JSON.stringify(obj, null, 2));
 		}
-
-		console.log(JSON.stringify(obj, null, 2));
-
-		// console.log(chalk.cyan(message));
-	});
+	);
 }
 
 export function deposit(amount) {
 	console.log(`Depositing ${amount} into your account...`);
 
-	client.basicAuth(
-		userCredentialsCache.getKey("username"),
-		userCredentialsCache.getKey("password")
-	);
+	checkUserLoggedIn();
 
-	client.post("/transactions/deposits", {
-		amount
-	}, function (
-		err,
-		req,
-		res,
-		obj
-	) {
-		let message;
+	client.post(
+		"/transactions/deposits",
+		{
+			amount
+		},
+		function(err, req, res, obj) {
+			let message;
+			if (err) {
+				if (res && res.statusCode == 401) {
+					message = `Authorization error. Please try logging in again.`;
+				} else {
+					message = _.get(
+						err,
+						"message",
+						`${strings.error}: Could not complete deposit`
+					);
+				}
+				console.log(`\n${chalk.red(message)}`);
+				return;
+			}
+
+			console.log(JSON.stringify(obj, null, 2));
+		}
+	);
+}
+
+export function getBalance() {
+	console.log(`Getting acount balance...`);
+
+	checkUserLoggedIn();
+
+	//TODO put in an endpoint to just check balance
+	client.get("/transactions", function(err, req, res, obj) {
+		let message = ``;
 		if (err) {
 			if (res && res.statusCode == 401) {
 				message = `Authorization error. Please try logging in again.`;
@@ -214,15 +231,16 @@ export function deposit(amount) {
 				message = _.get(
 					err,
 					"message",
-					`${strings.error}: Could not complete deposit`
+					`${strings.error}: Could not retrieve transactions`
 				);
 			}
 			console.log(`\n${chalk.red(message)}`);
 			return;
 		}
 
-		console.log(JSON.stringify(obj, null, 2));
-
-		// console.log(chalk.cyan(message));
+		if (obj.meta.balance) {
+			message = `Your account balance is ${obj.meta.balance}`;
+		}
+		console.log(chalk.cyan(message));
 	});
 }
