@@ -1,11 +1,18 @@
 {
-	"name": "simplebank",
+	"name": "simple-bank-ledger_front",
 	"version": "0.0.1",
 	"description": "The front end of a simple bank ledger.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/trambopoline/simple-bank-ledger_cli"
+	},
 	"main": "index.js",
 	"preferGlobal": true,
-	"bin": "./dist/index.js",
+	"bin": {
+		"simplebank": "./dist/index.js"
+	},
 	"scripts": {
+		"postinstall": "npm run build",
 		"build": "babel src --out-dir dist",
 		"start": "cross-env VERSION='$npm_package_version' DESCRIPTION='$npm_package_description' node dist/index.js",
 		"watch": "npm-watch build"
