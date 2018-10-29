@@ -1,5 +1,5 @@
 {
-	"name": "simple-bank-ledger_front",
+	"name": "simple-bank-ledger_cli",
 	"version": "0.0.1",
 	"description": "The front end of a simple bank ledger.",
 	"repository": {
@@ -12,7 +12,6 @@
 		"simplebank": "./dist/index.js"
 	},
 	"scripts": {
-		"postinstall": "npm run build",
 		"build": "babel src --out-dir dist",
 		"start": "cross-env VERSION='$npm_package_version' DESCRIPTION='$npm_package_description' node dist/index.js",
 		"watch": "npm-watch build"
